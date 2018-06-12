@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Api Rest Client</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="hhttps://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script>
+        JSON.parse = JSON.parse || function (str) {
+            if (str === '') {
+                str = '""';
+            }
+            eval('var p = ' + str + ';');
+            return p;
+        };
+
+        $(function () {
+            function getProducts() {
+                $.ajax({
+                    url: 'http://localhost/slim/api.php/products',
+                    type: 'get',
+                    success: function (response) {
+                        $.each(JSON.parse(response), function (i, index) {
+                            if (index.id) {
+                                $('.table').append(
+                                    '<tr><td>' + index.id + '</td>' +
+                                    '<td>' + index.name + '</td>' +
+                                    '<td>' + index.description + '</td>' +
+                                    '<td>' + index.price + '</td>' +
+                                    '<td><span class="delete btn btn-danger" data-product="' + index.id +'">Borrar</span></td>' +
+                                    '<td><span class="update btn btn-warning" data-product="' + index.id +'">Editar</span></td>' +
+                                    '</tr>'
+                                );
+                            }
+                        });
+
+                        $('.delete').unbind('click').click(function () {
+                            $.ajax({
+                                url: 'http://localhost/slim/api.php/products/' + $(this).data('product'),
+                                type: 'delete',
+                                success: function (response) {
+                                    $('.table').html(
+                                        '<tr>\n' +
+                                        '                <th>ID</th>\n' +
+                                        '                <th>NOMBRE</th>\n' +
+                                        '                <th>DESCRIPCION</th>\n' +
+                                        '                <th>PRECIO</th>\n' +
+                                        '                <th>ELIMINAR</th>\n' +
+                                        '                <th>EDITAR</th>\n' +
+                                        '            </tr>'
+                                    );
+
+                                    getProducts();
+                                    $('#form').attr('data-product', '0');
+                                    $('#form')[0].reset();
+                                }
+                            });
+                        });
+
+                    } 
+                });
+            }
+
+            getProducts();
+
+            if ($('#form').data('product') === 0) {
+                $('#form').submit(function (e) {
+                    e.preventDefault();
+
+                    $.ajax({
+                        url: 'http://localhost/slim/api.php/products',
+                        type: 'post',
+                        data: {
+                            name: $('#name').val(),
+                            description: $('#description').val(),
+                            price: $('#price').val(),
+                        },
+                        success: function (response) {
+
+                            $('.table').html(
+                                '<tr>\n' +
+                                '                <th>ID</th>\n' +
+                                '                <th>NOMBRE</th>\n' +
+                                '                <th>DESCRIPCION</th>\n' +
+                                '                <th>PRECIO</th>\n' +
+                                '                <th>ELIMINAR</th>\n' +
+                                '                <th>EDITAR</th>\n' +
+                                '            </tr>'
+                            );
+
+                            getProducts();
+                            $('#form')[0].reset();
+                        }
+                    });
+                });
+            }
+
+        });
+
+    </script>
+</head>
+<body>
+    <h3>CLIENTE WEB API REST SLIM</h3>
+    <div class="col-lg-7">
+        <table class="table">
+            <tr>
+                <th>ID</th>
+                <th>NOMBRE</th>
+                <th>DESCRIPCION</th>
+                <th>PRECIO</th>
+                <th>ELIMINAR</th>
+                <th>EDITAR</th>
+            </tr>
+        </table>
+    </div>
+    <div class="col-lg-5 pull-right">
+        <form action="http://localhost/slim/api.php/products" method="post" data-product="0" id="form">
+            <label for="name">Nombre</label>
+            <input type="text" name="name" id="name" class="form-control"><br>
+            <label for="description">Descripción</label>
+            <textarea name="description" id="description" cols="30" rows="10" class="form-control"></textarea><br>
+            <label for="price">Precio</label>
+            <input type="text" name="price" id="price" class="form-control"><br>
+            <input type="submit" value="Enviar">
+        </form>
+    </div>
+</body>
+</html>
